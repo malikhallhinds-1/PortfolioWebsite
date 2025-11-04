@@ -78,7 +78,7 @@ export default function Contact() {
               <form onSubmit={handleSubmit} className="space-y-6">
                 <div>
                   <label htmlFor="name" className="block text-sm font-medium mb-2">
-                    Malik Hall-Hinds
+                    Name
                   </label>
                   <input
                     type="text"
@@ -88,7 +88,7 @@ export default function Contact() {
                     onChange={handleChange}
                     required
                     className="w-full px-4 py-3 bg-slate-800/50 border border-slate-700 rounded-lg focus:outline-none focus:border-emerald-400 transition-colors text-slate-100"
-                    placeholder="Malik Hall-Hinds"
+                    placeholder="Your name"
                   />
                 </div>
 
