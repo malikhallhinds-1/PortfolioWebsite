@@ -1,4 +1,4 @@
-import { Mail, MapPin, Send } from 'lucide-react';
+import { Mail, MapPin, Send, CheckCircle, AlertCircle } from 'lucide-react';
 import { useState } from 'react';
 
 export default function Contact() {
@@ -7,15 +7,37 @@ export default function Contact() {
     email: '',
     message: '',
   });
+  const [status, setStatus] = useState('idle');
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: { preventDefault: () => void; }) => {
     e.preventDefault();
-    console.log('Form submitted:', formData);
+    setStatus('sending');
+
+    try {
+      const response = await fetch('https://formspree.io/f/xkgplllz', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(formData),
+      });
+
+      if (response.ok) {
+        setStatus('success');
+        setFormData({ name: '', email: '', message: '' });
+        setTimeout(() => setStatus('idle'), 5000);
+      } else {
+        setStatus('error');
+        setTimeout(() => setStatus('idle'), 5000);
+      }
+    } catch (error) {
+      console.error('Error:', error);
+      setStatus('error');
+      setTimeout(() => setStatus('idle'), 5000);
+    }
   };
 
-  const handleChange = (
-    e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>
-  ) => {
+  const handleChange = (e: { target: { name: any; value: any; }; }) => {
     setFormData({
       ...formData,
       [e.target.name]: e.target.value,
@@ -75,6 +97,20 @@ export default function Contact() {
             </div>
 
             <div>
+              {status === 'success' && (
+                <div className="mb-6 p-4 bg-emerald-600/20 border border-emerald-600 rounded-lg flex items-center space-x-3">
+                  <CheckCircle className="w-5 h-5 text-emerald-400 flex-shrink-0" />
+                  <p className="text-emerald-400 text-sm">Message sent successfully!</p>
+                </div>
+              )}
+
+              {status === 'error' && (
+                <div className="mb-6 p-4 bg-red-600/20 border border-red-600 rounded-lg flex items-center space-x-3">
+                  <AlertCircle className="w-5 h-5 text-red-400 flex-shrink-0" />
+                  <p className="text-red-400 text-sm">Failed to send. Please try again.</p>
+                </div>
+              )}
+
               <form onSubmit={handleSubmit} className="space-y-6">
                 <div>
                   <label htmlFor="name" className="block text-sm font-medium mb-2">
@@ -87,7 +123,8 @@ export default function Contact() {
                     value={formData.name}
                     onChange={handleChange}
                     required
-                    className="w-full px-4 py-3 bg-slate-800/50 border border-slate-700 rounded-lg focus:outline-none focus:border-emerald-400 transition-colors text-slate-100"
+                    disabled={status === 'sending'}
+                    className="w-full px-4 py-3 bg-slate-800/50 border border-slate-700 rounded-lg focus:outline-none focus:border-emerald-400 transition-colors text-slate-100 disabled:opacity-50"
                     placeholder="Your name"
                   />
                 </div>
@@ -103,8 +140,9 @@ export default function Contact() {
                     value={formData.email}
                     onChange={handleChange}
                     required
-                    className="w-full px-4 py-3 bg-slate-800/50 border border-slate-700 rounded-lg focus:outline-none focus:border-emerald-400 transition-colors text-slate-100"
-                    placeholder="Malikhallhinds1@gmail.com"
+                    disabled={status === 'sending'}
+                    className="w-full px-4 py-3 bg-slate-800/50 border border-slate-700 rounded-lg focus:outline-none focus:border-emerald-400 transition-colors text-slate-100 disabled:opacity-50"
+                    placeholder="your.email@example.com"
                   />
                 </div>
 
@@ -119,16 +157,18 @@ export default function Contact() {
                     onChange={handleChange}
                     required
                     rows={5}
-                    className="w-full px-4 py-3 bg-slate-800/50 border border-slate-700 rounded-lg focus:outline-none focus:border-emerald-400 transition-colors text-slate-100 resize-none"
+                    disabled={status === 'sending'}
+                    className="w-full px-4 py-3 bg-slate-800/50 border border-slate-700 rounded-lg focus:outline-none focus:border-emerald-400 transition-colors text-slate-100 resize-none disabled:opacity-50"
                     placeholder="Your message..."
                   />
                 </div>
 
                 <button
                   type="submit"
-                  className="w-full px-6 py-3 bg-emerald-600 hover:bg-emerald-500 text-white rounded-lg transition-all duration-300 transform hover:scale-105 shadow-lg hover:shadow-emerald-500/50 flex items-center justify-center space-x-2"
+                  disabled={status === 'sending'}
+                  className="w-full px-6 py-3 bg-emerald-600 hover:bg-emerald-500 text-white rounded-lg transition-all duration-300 transform hover:scale-105 shadow-lg hover:shadow-emerald-500/50 flex items-center justify-center space-x-2 disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:scale-100"
                 >
-                  <span>Send Message</span>
+                  <span>{status === 'sending' ? 'Sending...' : 'Send Message'}</span>
                   <Send className="w-5 h-5" />
                 </button>
               </form>
